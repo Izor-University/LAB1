@@ -55,11 +55,13 @@ void double_print(const void* element) {
 
 
 
+
 static TypeInfo* ofDouble = NULL;
 
 void* GetGetDoubleTypeInfo() {
     if (ofDouble==NULL) {
         ofDouble=malloc(sizeof(ofDouble));
         ofDouble->element_size=sizeof(double);
+        ofDouble->create_zero=double_create_zero();
     }
 }
