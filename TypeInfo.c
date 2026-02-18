@@ -47,21 +47,36 @@ static void* double_mul(const void* a, const void* b) {
     return result;
 }
 
-void double_print(const void* element) {
+static void double_print(const void* element) {
     double* element_double = (double*)element;
     printf("%lf\n", *element_double);
 }
 
-
+static int double_compare(const void* arg1, const void* arg2){
+	double* arg1_double = (double*)arg1;
+	double* arg2_double = (double*)arg2;
+	
+	double diff = *arg1_double - *arg2_double;
+	if (diff < -1e-9) return -1; // arg1 > arg2
+	if (diff > 1e-9) return 1; // arg1 < arg2
+	return 0; // arg1 = arg2
+}
 
 
 
 static TypeInfo* ofDouble = NULL;
 
-void* GetGetDoubleTypeInfo() {
+void* GetDoubleTypeInfo() {
     if (ofDouble==NULL) {
         ofDouble=malloc(sizeof(ofDouble));
         ofDouble->element_size=sizeof(double);
         ofDouble->create_zero=double_create_zero();
+	ofDouble->destroy = NULL;
+	ofDouble->copy = double_copy(void* dest, const void* src);
+	ofDouble->add = double_add(const void* arg1, const coid* arg2);
+	ofDouble->substract = double_sub(const void* arg1, const void* arg2);
+	ofDouble->multiply = doubel_mul(const void* arg1, const void* arg2);
+	ofDouble->print = double_print(const void* element);
+	ofDouble->compare = double_compare(const void* arg1, const void* arg2);
     }
 }
