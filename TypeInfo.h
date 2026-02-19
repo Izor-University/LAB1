@@ -1,7 +1,3 @@
-//
-// Created by OPS on 17.02.2026.
-//
-
 #ifndef UNTITLED_TYPEINFO_H
 #define UNTITLED_TYPEINFO_H
 typedef struct TypeInfo {
@@ -16,6 +12,6 @@ typedef struct TypeInfo {
     int (*compare)(const void* a, const void* b);
 } TypeInfo;
 
-void* GetDoubleTypeInfo();
-void* GetComplexTypeInfo();
+void* ofDouble();
+void* ofComplex();
 #endif //UNTITLED_TYPEINFO_H
