@@ -2,7 +2,7 @@
 // Created by OPS on 17.02.2026.
 //
 
-#include "vector3d.h"
+#include "Vector3D.h"
 #include <stdlib.h>
 #include <stdio.h>
 

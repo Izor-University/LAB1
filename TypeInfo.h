@@ -1,5 +1,6 @@
 #ifndef UNTITLED_TYPEINFO_H
 #define UNTITLED_TYPEINFO_H
+#include <stdio.h>  
 typedef struct TypeInfo {
     size_t element_size;
     void* (*create_zero)();
