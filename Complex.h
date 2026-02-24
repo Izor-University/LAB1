@@ -1,25 +1,25 @@
 #ifndef COMPLEX_H
 #define COMPLEX_H
 
-typedef struct Complex {
-	double real;
-	double imag;
-} Complex;
+#include <stddef.h>
 
-// Создание и уничтожение
+typedef struct Complex Complex;
+
+size_t   Complex_SizeOf(void);
+void     Complex_Copy(void* dest, const void* src);
+
+
 Complex* Complex_Create(double real, double imag);
-Complex* Complex_Zero();
-void Complex_Destroy(Complex* elem);
-
-// Арифметические операции (возвращают новые объекты)
-Complex* Complex_Add(const Complex* arg1, const Complex* arg2);
-Complex* Complex_Subtract(const Complex* arg1, const Complex* arg2);
-Complex* Complex_Multiply(const Complex* arg1, const Complex* arg2);
-Complex* Complex_Conjugate(const Complex* elem);
+Complex* Complex_Zero(void);
 
 
-// Утилиты
+
+Complex* Complex_Add(const Complex* a, const Complex* b);
+Complex* Complex_Subtract(const Complex* a, const Complex* b);
+Complex* Complex_Multiply(const Complex* a, const Complex* b);
+
+
 void Complex_Print(const Complex* elem);
-int Complex_Equal(const Complex* arg1, const Complex* arg2);
+int  Complex_Equal(const Complex* a, const Complex* b);
 
 #endif
