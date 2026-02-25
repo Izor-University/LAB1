@@ -21,39 +21,39 @@ static void double_copy(void* dest, const void* src) {
     *(double*)dest = *(const double*)src;
 }
 
-static void* double_add(const void* a, const void* b) {
-    double* r = (double*)malloc(sizeof(double));
+static void* double_add(const void* arg1, const void* arg2) {
+    double* result = (double*)malloc(sizeof(double));
 
-    *r = *(const double*)a + *(const double*)b;
+    *result = *(const double*)arg1 + *(const double*)arg2;
 
-    return r;
+    return result;
 }
 
-static void* double_sub(const void* a, const void* b) {
-    double* r = (double*)malloc(sizeof(double));
+static void* double_sub(const void* arg1, const void* arg2) {
+    double* result = (double*)malloc(sizeof(double));
 
-    *r = *(const double*)a - *(const double*)b;\
+    *result = *(const double*)arg1 - *(const double*)arg2;
 
-    return r;
+    return result;
 }
 
-static void* double_mul(const void* a, const void* b) {
-    double* r = (double*)malloc(sizeof(double));
+static void* double_mul(const void* arg1, const void* arg2) {
+    double* result = (double*)malloc(sizeof(double));
 
-    *r = *(const double*)a * *(const double*)b;
+    *result = *(const double*)arg1 * *(const double*)arg2;
 
-    return r;
+    return result;
 }
 
-static void double_print(const void* e) {
-    printf("%.3f\n", *(const double*)e);
+static void double_print(const void* elem) {
+    printf("%.3f\n", *(const double*)elem);
 }
 
-static int double_compare(const void* a, const void* b) {
-    double d = *(const double*)a - *(const double*)b;
+static int double_compare(const void* arg1, const void* arg2) {
+    double diff = *(const double*)arg1 - *(const double*)arg2;
 
-    if (d < -1e-9) return -1;
-    if (d >  1e-9) return  1;
+    if (diff < -1e-9) return -1;// arg1 < arg2
+    if (diff >  1e-9) return  1;// arg1 > arg2
 
     return 0;
 }
@@ -68,30 +68,30 @@ static void complex_copy(void* dest, const void* src) {
     Complex_Copy(dest, src);
 }
 
-static void* complex_add(const void* a, const void* b) {
-    return Complex_Add((const Complex*)a, (const Complex*)b);
+static void* complex_add(const void* arg1, const void* arg2) {
+    return Complex_Add((const Complex*)arg1, (const Complex*)arg2);
 }
 
-static void* complex_sub(const void* a, const void* b) {
-    return Complex_Subtract((const Complex*)a, (const Complex*)b);
+static void* complex_sub(const void* arg1, const void* arg2) {
+    return Complex_Subtract((const Complex*)arg1, (const Complex*)arg2);
 }
 
-static void* complex_mul(const void* a, const void* b) {
-    return Complex_Multiply((const Complex*)a, (const Complex*)b);
+static void* complex_mul(const void* arg1, const void* arg2) {
+    return Complex_Multiply((const Complex*)arg1, (const Complex*)arg2);
 }
 
-static void complex_print(const void* e) {
-    Complex_Print((const Complex*)e);
+static void complex_print(const void* elem) {
+    Complex_Print((const Complex*)elem);
     printf("\n");
 }
 
-static int complex_compare(const void* a, const void* b) {
-    return Complex_Equal((const Complex*)a, (const Complex*)b) ? 0 : 1;
+static int complex_compare(const void* arg1, const void* arg2) {
+    return Complex_Equal((const Complex*)arg1, (const Complex*)arg2) ? 0 : 1;
 }
 
 
 //Functions
-TypeInfo* ofDouble(void) {
+TypeInfo* ofDouble() {
     if (double_type == NULL) {
         double_type = (TypeInfo*)malloc(sizeof(TypeInfo));
         double_type->element_size = sizeof(double);
@@ -107,7 +107,7 @@ TypeInfo* ofDouble(void) {
     return double_type;
 }
 
-TypeInfo* ofComplex(void) {
+TypeInfo* ofComplex() {
     if (complex_type == NULL) {
         complex_type = (TypeInfo*)malloc(sizeof(TypeInfo));
         complex_type->element_size = Complex_SizeOf();
@@ -123,7 +123,7 @@ TypeInfo* ofComplex(void) {
     return complex_type;
 }
 
-void TypeInfo_FreeAll(void) {
+void TypeInfo_FreeAll() {
     free(double_type);  double_type  = NULL;
     free(complex_type); complex_type = NULL;
 }
