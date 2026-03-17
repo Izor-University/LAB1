@@ -13,60 +13,51 @@ size_t Complex_SizeOf() {
 }
 
 void Complex_Copy(void* dest, const void* src) {
-    Complex*       d = (Complex*)dest;
-
+    Complex* d = (Complex*)dest;
     const Complex* s = (const Complex*)src;
-
     d->real = s->real;
     d->imag = s->imag;
 }
 
-Complex* Complex_Create(double real, double imag) {
-    Complex* elem = (Complex*)malloc(sizeof(Complex));
-
-    if (elem == NULL) {
-        fprintf(stderr, "Error: Memory allocation failed for Complex\n");
-        return NULL;
-    }
-
-    elem->real = real;
-    elem->imag = imag;
-
-    return elem;
+void Complex_Create(Complex* dest, double real, double imag) {
+    if (!dest) return;
+    dest->real = real;
+    dest->imag = imag;
 }
 
-Complex* Complex_Zero() {
-    return Complex_Create(0.0, 0.0);
+void Complex_Zero(Complex* dest) {
+    if (!dest) return;
+    dest->real = 0.0;
+    dest->imag = 0.0;
 }
 
-Complex* Complex_Add(const Complex* arg1, const Complex* arg2) {
-    if (!arg1 || !arg2) {
+void Complex_Add(Complex* result, const Complex* arg1, const Complex* arg2) {
+    if (!result || !arg1 || !arg2) {
         fprintf(stderr, "Error: NULL in Complex_Add\n");
-        return NULL;
+        return;
     }
-
-    return Complex_Create(arg1->real + arg2->real, arg1->imag + arg2->imag);
+    result->real = arg1->real + arg2->real;
+    result->imag = arg1->imag + arg2->imag;
 }
 
-Complex* Complex_Subtract(const Complex* arg1, const Complex* arg2) {
-    if (!arg1 || !arg2) {
+void Complex_Subtract(Complex* result, const Complex* arg1, const Complex* arg2) {
+    if (!result || !arg1 || !arg2) {
         fprintf(stderr, "Error: NULL in Complex_Subtract\n");
-        return NULL;
+        return;
     }
-
-    return Complex_Create(arg1->real - arg2->real, arg1->imag - arg2->imag);
+    result->real = arg1->real - arg2->real;
+    result->imag = arg1->imag - arg2->imag;
 }
 
-Complex* Complex_Multiply(const Complex* arg1, const Complex* arg2) {
-    if (!arg1 || !arg2) {
+void Complex_Multiply(Complex* result, const Complex* arg1, const Complex* arg2) {
+    if (!result || !arg1 || !arg2) {
         fprintf(stderr, "Error: NULL in Complex_Multiply\n");
-        return NULL;
+        return;
     }
-
     double real = arg1->real * arg2->real - arg1->imag * arg2->imag;
     double imag = arg1->real * arg2->imag + arg1->imag * arg2->real;
-
-    return Complex_Create(real, imag);
+    result->real = real;
+    result->imag = imag;
 }
 
 void Complex_Print(const Complex* elem) {
@@ -74,7 +65,6 @@ void Complex_Print(const Complex* elem) {
         printf("NULL");
         return;
     }
-
     if (fabs(elem->imag) < 1e-9)
         printf("%.3f", elem->real);
     else if (elem->imag >= 0)
@@ -86,7 +76,6 @@ void Complex_Print(const Complex* elem) {
 int Complex_Equal(const Complex* arg1, const Complex* arg2) {
     if (!arg1 && !arg2) return 1;
     if (!arg1 || !arg2) return 0;
-
     return fabs(arg1->real - arg2->real) < 1e-9 &&
            fabs(arg1->imag - arg2->imag) < 1e-9;
 }

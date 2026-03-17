@@ -6,13 +6,13 @@
 
 // ========== Prototypes ==========
 
-void      print_menu(void);
+void print_menu(void);
 Vector3D* create_double_vector(void);
 Vector3D* create_complex_vector(void);
 Vector3D* create_vector_same_type(Vector3D* v1);
-void      handle_add(Vector3D* v1);
-void      handle_dot(Vector3D* v1);
-void      handle_cross(Vector3D* v1);
+void handle_add(Vector3D* v1);
+void handle_dot(Vector3D* v1);
+void handle_cross(Vector3D* v1);
 
 // ========== Main ==========
 
@@ -31,54 +31,54 @@ int main(void) {
             continue;
         }
         switch (choice) {
-            case 1:
-                if (v1) Vector3D_Destroy(v1);
-                v1 = create_double_vector();
-                if (v1) {
-                    printf("v1 =\n");
-                    Vector3D_Print(v1);
-                }
-                break;
-
-            case 2:
-                if (v1) Vector3D_Destroy(v1);
-                v1 = create_complex_vector();
-                if (v1) {
-                    printf("v1 =\n");
-                    Vector3D_Print(v1);
-                }
-                break;
-
-            case 3:
-                if (!v1) { printf("No vector. Create one first.\n"); break; }
-                handle_add(v1);
-                break;
-
-            case 4:
-                if (!v1) { printf("No vector. Create one first.\n"); break; }
-                handle_dot(v1);
-                break;
-
-            case 5:
-                if (!v1) { printf("No vector. Create one first.\n"); break; }
-                handle_cross(v1);
-                break;
-
-            case 6:
-                if (!v1) { printf("No vector.\n"); break; }
+        case 1:
+            if (v1) Vector3D_Destroy(v1);
+            v1 = create_double_vector();
+            if (v1) {
                 printf("v1 =\n");
                 Vector3D_Print(v1);
-                break;
+            }
+            break;
 
-            case 0:
-                if (v1) Vector3D_Destroy(v1);
-                TypeInfo_FreeAll();
-                printf("Exit.\n");
-                return 0;
+        case 2:
+            if (v1) Vector3D_Destroy(v1);
+            v1 = create_complex_vector();
+            if (v1) {
+                printf("v1 =\n");
+                Vector3D_Print(v1);
+            }
+            break;
 
-            default:
-                printf("Invalid choice.\n");
-                break;
+        case 3:
+            if (!v1) { printf("No vector. Create one first.\n"); break; }
+            handle_add(v1);
+            break;
+
+        case 4:
+            if (!v1) { printf("No vector. Create one first.\n"); break; }
+            handle_dot(v1);
+            break;
+
+        case 5:
+            if (!v1) { printf("No vector. Create one first.\n"); break; }
+            handle_cross(v1);
+            break;
+
+        case 6:
+            if (!v1) { printf("No vector.\n"); break; }
+            printf("v1 =\n");
+            Vector3D_Print(v1);
+            break;
+
+        case 0:
+            if (v1) Vector3D_Destroy(v1);
+            TypeInfo_FreeAll();
+            printf("Exit.\n");
+            return 0;
+
+        default:
+            printf("Invalid choice.\n");
+            break;
         }
     }
 }
@@ -89,9 +89,9 @@ void print_menu(void) {
     printf("\n");
     printf("1. Create double vector\n");
     printf("2. Create complex vector\n");
-    printf("3. Add     (v1 + v2)\n");
-    printf("4. Dot     (v1 . v2)\n");
-    printf("5. Cross   (v1 x v2)\n");
+    printf("3. Add (v1 + v2)\n");
+    printf("4. Dot (v1 . v2)\n");
+    printf("5. Cross (v1 x v2)\n");
     printf("6. Print v1\n");
     printf("0. Exit\n");
     printf("Choice: ");
@@ -107,7 +107,26 @@ Vector3D* create_double_vector(void) {
     if (scanf("%lf", &y) != 1) { while (getchar() != '\n'); return NULL; }
     printf("Enter z: ");
     if (scanf("%lf", &z) != 1) { while (getchar() != '\n'); return NULL; }
-    return Vector3D_Create(&x, &y, &z, ofDouble());
+
+    TypeInfo* ti = ofDouble();
+
+    double* xb = malloc(ti->element_size);
+    double* yb = malloc(ti->element_size);
+    double* zb = malloc(ti->element_size);
+    if (!xb || !yb || !zb) {
+        free(xb); free(yb); free(zb);
+        return NULL;
+    }
+    *xb = x; *yb = y; *zb = z;
+
+    Vector3D* vec = malloc(Vector3D_SizeOf());
+    if (!vec) {
+        free(xb); free(yb); free(zb);
+        return NULL;
+    }
+
+    Vector3D_Create(vec, xb, yb, zb, ti);
+    return vec;
 }
 
 Vector3D* create_complex_vector(void) {
@@ -119,28 +138,32 @@ Vector3D* create_complex_vector(void) {
     printf("Enter z (real imag): ");
     if (scanf("%lf %lf", &z_re, &z_im) != 2) { while (getchar() != '\n'); return NULL; }
 
-    Complex* x = Complex_Create(x_re, x_im);
-    Complex* y = Complex_Create(y_re, y_im);
-    Complex* z = Complex_Create(z_re, z_im);
-    if (!x || !y || !z) {
-        free(x);
-        free(y);
-        free(z);
+    TypeInfo* ti = ofComplex();
 
+    Complex* xb = malloc(Complex_SizeOf());
+    Complex* yb = malloc(Complex_SizeOf());
+    Complex* zb = malloc(Complex_SizeOf());
+
+    if (!xb || !yb || !zb) {
+        free(xb); free(yb); free(zb);
         printf("Error: allocation failed.\n");
-
         return NULL;
     }
 
-    Vector3D* vec = Vector3D_Create(x, y, z, ofComplex());
+    Complex_Create(xb, x_re, x_im);
+    Complex_Create(yb, y_re, y_im);
+    Complex_Create(zb, z_re, z_im);
 
-    free(x);
-    free(y);
-    free(z);
+    Vector3D* vec = malloc(Vector3D_SizeOf());
+    if (!vec) {
+        free(xb); free(yb); free(zb);
+        printf("Error: allocation failed.\n");
+        return NULL;
+    }
 
+    Vector3D_Create(vec, xb, yb, zb, ti);
     return vec;
 }
-
 
 Vector3D* create_vector_same_type(Vector3D* v1) {
     if (Vector3D_GetTypeInfo(v1) == ofDouble())
@@ -156,13 +179,27 @@ void handle_add(Vector3D* v1) {
     Vector3D* v2 = create_vector_same_type(v1);
     if (!v2) { printf("Failed to create vector.\n"); return; }
 
-    Vector3D* result = Vector3D_Add(v1, v2);
-    if (result) {
-        printf("v1 =\n");     Vector3D_Print(v1);
-        printf("v2 =\n");     Vector3D_Print(v2);
-        printf("v1 + v2 =\n"); Vector3D_Print(result);
-        Vector3D_Destroy(result);
+    TypeInfo* ti = Vector3D_GetTypeInfo(v1);
+
+    Vector3D* result = malloc(Vector3D_SizeOf());
+    void* rx = malloc(ti->element_size);
+    void* ry = malloc(ti->element_size);
+    void* rz = malloc(ti->element_size);
+
+    if (!result || !rx || !ry || !rz) {
+        free(result); free(rx); free(ry); free(rz);
+        Vector3D_Destroy(v2);
+        return;
     }
+
+    Vector3D_Create(result, rx, ry, rz, ti);
+    Vector3D_Add(result, v1, v2);
+
+    printf("v1 =\n"); Vector3D_Print(v1);
+    printf("v2 =\n"); Vector3D_Print(v2);
+    printf("v1 + v2 =\n"); Vector3D_Print(result);
+
+    Vector3D_Destroy(result);
     Vector3D_Destroy(v2);
 }
 
@@ -171,15 +208,19 @@ void handle_dot(Vector3D* v1) {
     Vector3D* v2 = create_vector_same_type(v1);
     if (!v2) { printf("Failed to create vector.\n"); return; }
 
-    void* result = Vector3D_DotProduct(v1, v2);
-    if (result) {
-        printf("v1 =\n"); Vector3D_Print(v1);
-        printf("v2 =\n"); Vector3D_Print(v2);
-        printf("v1 . v2 = ");
-        /* Используем type->print через TypeInfo — без прямого сравнения типов */
-        Vector3D_GetTypeInfo(v1)->print(result);
-        free(result);
-    }
+    TypeInfo* ti = Vector3D_GetTypeInfo(v1);
+    void* result = malloc(ti->element_size);
+    if (!result) { Vector3D_Destroy(v2); return; }
+
+    Vector3D_DotProduct(result, v1, v2);
+
+    printf("v1 =\n"); Vector3D_Print(v1);
+    printf("v2 =\n"); Vector3D_Print(v2);
+    printf("v1 . v2 = ");
+
+    ti->print(result);
+
+    free(result);
     Vector3D_Destroy(v2);
 }
 
@@ -188,12 +229,26 @@ void handle_cross(Vector3D* v1) {
     Vector3D* v2 = create_vector_same_type(v1);
     if (!v2) { printf("Failed to create vector.\n"); return; }
 
-    Vector3D* result = Vector3D_CrossProduct(v1, v2);
-    if (result) {
-        printf("v1 =\n");     Vector3D_Print(v1);
-        printf("v2 =\n");     Vector3D_Print(v2);
-        printf("v1 x v2 =\n"); Vector3D_Print(result);
-        Vector3D_Destroy(result);
+    TypeInfo* ti = Vector3D_GetTypeInfo(v1);
+
+    Vector3D* result = malloc(Vector3D_SizeOf());
+    void* rx = malloc(ti->element_size);
+    void* ry = malloc(ti->element_size);
+    void* rz = malloc(ti->element_size);
+
+    if (!result || !rx || !ry || !rz) {
+        free(result); free(rx); free(ry); free(rz);
+        Vector3D_Destroy(v2);
+        return;
     }
+
+    Vector3D_Create(result, rx, ry, rz, ti);
+    Vector3D_CrossProduct(result, v1, v2);
+
+    printf("v1 =\n"); Vector3D_Print(v1);
+    printf("v2 =\n"); Vector3D_Print(v2);
+    printf("v1 x v2 =\n"); Vector3D_Print(result);
+
+    Vector3D_Destroy(result);
     Vector3D_Destroy(v2);
 }

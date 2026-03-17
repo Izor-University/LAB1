@@ -4,29 +4,22 @@
 
 
 struct Vector3D {
-    void*     x;
-    void*     y;
-    void*     z;
+    void* x;
+    void* y;
+    void* z;
     TypeInfo* typeInfo;
 };
 
-Vector3D* Vector3D_Create(void* x, void* y, void* z, TypeInfo* typeInfo) {
-    if (!x || !y || !z || !typeInfo) return NULL;
-    Vector3D* vec = (Vector3D*)malloc(sizeof(Vector3D));
-    if (!vec) return NULL;
+size_t Vector3D_SizeOf(void) {
+    return sizeof(struct Vector3D);
+}
+
+void Vector3D_Create(Vector3D* vec, void* x, void* y, void* z, TypeInfo* typeInfo) {
+    if (!vec || !x || !y || !z || !typeInfo) return;
     vec->typeInfo = typeInfo;
-    vec->x = malloc(typeInfo->element_size);
-    vec->y = malloc(typeInfo->element_size);
-    vec->z = malloc(typeInfo->element_size);
-    if (!vec->x || !vec->y || !vec->z) {
-        fprintf(stderr, "Error: Memory allocation failed for vector components\n");
-        free(vec->x); free(vec->y); free(vec->z); free(vec);
-        return NULL;
-    }
-    typeInfo->copy(vec->x, x);
-    typeInfo->copy(vec->y, y);
-    typeInfo->copy(vec->z, z);
-    return vec;
+    vec->x = x;
+    vec->y = y;
+    vec->z = z;
 }
 
 void Vector3D_Destroy(Vector3D* vec) {
@@ -40,9 +33,24 @@ void Vector3D_Destroy(Vector3D* vec) {
     free(vec);
 }
 
-Vector3D* Vector3D_Clone(const Vector3D* vec) {
-    if (!vec) return NULL;
-    return Vector3D_Create(vec->x, vec->y, vec->z, vec->typeInfo);
+Vector3D* Vector3D_Clone(const Vector3D* src) {
+    if (!src) return NULL;
+    TypeInfo* ti = src->typeInfo;
+
+    Vector3D* vec = malloc(Vector3D_SizeOf());
+    void* xb = malloc(ti->element_size);
+    void* yb = malloc(ti->element_size);
+    void* zb = malloc(ti->element_size);
+    if (!vec || !xb || !yb || !zb) {
+        free(vec); free(xb); free(yb); free(zb);
+        return NULL;
+    }
+
+    ti->copy(xb, src->x);
+    ti->copy(yb, src->y);
+    ti->copy(zb, src->z);
+    Vector3D_Create(vec, xb, yb, zb, ti);
+    return vec;
 }
 
 
@@ -75,81 +83,80 @@ void Vector3D_SetZ(Vector3D* vec, const void* z) {
 
 //Operations
 
-Vector3D* Vector3D_Add(const Vector3D* v1, const Vector3D* v2) {
-    if (!v1 || !v2) return NULL;
+void Vector3D_Add(Vector3D* result, const Vector3D* v1, const Vector3D* v2) {
+    if (!result || !v1 || !v2) return;
     if (v1->typeInfo != v2->typeInfo) {
         fprintf(stderr, "Error: type mismatch in Vector3D_Add\n");
-        return NULL;
+        return;
     }
 
     TypeInfo* ti = v1->typeInfo;
 
-    void* rx = ti->add(v1->x, v2->x);
-    void* ry = ti->add(v1->y, v2->y);
-    void* rz = ti->add(v1->z, v2->z);
-
-    Vector3D* res = Vector3D_Create(rx, ry, rz, ti);
-
-    free(rx);
-    free(ry);
-    free(rz);
-
-    return res;
+    ti->add(result->x, v1->x, v2->x);
+    ti->add(result->y, v1->y, v2->y);
+    ti->add(result->z, v1->z, v2->z);
+    result->typeInfo = ti;
 }
 
-void* Vector3D_DotProduct(const Vector3D* v1, const Vector3D* v2) {
-    if (!v1 || !v2) return NULL;
+void Vector3D_DotProduct(void* result, const Vector3D* v1, const Vector3D* v2) {
+    if (!result || !v1 || !v2) return;
     if (v1->typeInfo != v2->typeInfo) {
         fprintf(stderr, "Error: type mismatch in Vector3D_DotProduct\n");
-        return NULL;
+        return;
     }
 
     TypeInfo* ti = v1->typeInfo;
 
-    void* px = ti->multiply(v1->x, v2->x);
-    void* py = ti->multiply(v1->y, v2->y);
-    void* pz = ti->multiply(v1->z, v2->z);
-    void* tmp = ti->add(px, py);
-    void* res = ti->add(tmp, pz);
+    void* px = malloc(ti->element_size);
+    void* py = malloc(ti->element_size);
+    void* pz = malloc(ti->element_size);
+    void* tmp = malloc(ti->element_size);
+
+    ti->multiply(px, v1->x, v2->x);
+    ti->multiply(py, v1->y, v2->y);
+    ti->multiply(pz, v1->z, v2->z);
+    ti->add(tmp, px, py);
+    ti->add(result, tmp, pz);
 
     free(px);
     free(py);
     free(pz);
     free(tmp);
-    return res;
 }
 
-Vector3D* Vector3D_CrossProduct(const Vector3D* v1, const Vector3D* v2) {
-    if (!v1 || !v2) return NULL;
+void Vector3D_CrossProduct(Vector3D* result, const Vector3D* v1, const Vector3D* v2) {
+    if (!result || !v1 || !v2) return;
     if (v1->typeInfo != v2->typeInfo) {
         fprintf(stderr, "Error: type mismatch in Vector3D_CrossProduct\n");
-        return NULL;
+        return;
     }
     TypeInfo* ti = v1->typeInfo;
 
     /* rx = y1*z2 - z1*y2 */
-    void* p1x = ti->multiply(v1->y, v2->z);
-    void* p2x = ti->multiply(v1->z, v2->y);
-    void* rx  = ti->subtract(p1x, p2x);
+    void* p1x = malloc(ti->element_size);
+    void* p2x = malloc(ti->element_size);
+    ti->multiply(p1x, v1->y, v2->z);
+    ti->multiply(p2x, v1->z, v2->y);
+    ti->subtract(result->x, p1x, p2x);
+    free(p1x); free(p2x);
 
     /* ry = z1*x2 - x1*z2 */
-    void* p1y = ti->multiply(v1->z, v2->x);
-    void* p2y = ti->multiply(v1->x, v2->z);
-    void* ry  = ti->subtract(p1y, p2y);
+    void* p1y = malloc(ti->element_size);
+    void* p2y = malloc(ti->element_size);
+    ti->multiply(p1y, v1->z, v2->x);
+    ti->multiply(p2y, v1->x, v2->z);
+    ti->subtract(result->y, p1y, p2y);
+    free(p1y); free(p2y);
 
     /* rz = x1*y2 - y1*x2 */
-    void* p1z = ti->multiply(v1->x, v2->y);
-    void* p2z = ti->multiply(v1->y, v2->x);
-    void* rz  = ti->subtract(p1z, p2z);
+    void* p1z = malloc(ti->element_size);
+    void* p2z = malloc(ti->element_size);
+    ti->multiply(p1z, v1->x, v2->y);
+    ti->multiply(p2z, v1->y, v2->x);
+    ti->subtract(result->z, p1z, p2z);
+    free(p1z); free(p2z);
 
-    Vector3D* res = Vector3D_Create(rx, ry, rz, ti);
-
-    free(p1x); free(p2x); free(rx);
-    free(p1y); free(p2y); free(ry);
-    free(p1z); free(p2z); free(rz);
-
-
-    return res;
+    result->typeInfo = ti;
 }
 
 //Utils
@@ -164,7 +171,7 @@ void Vector3D_Print(const Vector3D* vec) {
         return;
     }
 
-    printf("  X = "); vec->typeInfo->print(vec->x);
-    printf("  Y = "); vec->typeInfo->print(vec->y);
-    printf("  Z = "); vec->typeInfo->print(vec->z);
+    printf(" X = "); vec->typeInfo->print(vec->x);
+    printf(" Y = "); vec->typeInfo->print(vec->y);
+    printf(" Z = "); vec->typeInfo->print(vec->z);
 }

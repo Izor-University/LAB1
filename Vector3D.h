@@ -7,8 +7,9 @@
 typedef struct Vector3D Vector3D;
 
 //Create and Destroy
-Vector3D* Vector3D_Create(void* x, void* y, void* z, TypeInfo* typeInfo);
-void      Vector3D_Destroy(Vector3D* vec);
+size_t Vector3D_SizeOf(void);
+void Vector3D_Create(Vector3D* vec, void* x, void* y, void* z, TypeInfo* typeInfo);
+void Vector3D_Destroy(Vector3D* vec);
 Vector3D* Vector3D_Clone(const Vector3D* vec);
 
 //Getters
@@ -23,9 +24,9 @@ void Vector3D_SetY(Vector3D* vec, const void* y);
 void Vector3D_SetZ(Vector3D* vec, const void* z);
 
 //Operations
-Vector3D* Vector3D_Add(const Vector3D* v1, const Vector3D* v2);
-void*     Vector3D_DotProduct(const Vector3D* v1, const Vector3D* v2);
-Vector3D* Vector3D_CrossProduct(const Vector3D* v1, const Vector3D* v2);
+void Vector3D_Add(Vector3D* result, const Vector3D* v1, const Vector3D* v2);
+void Vector3D_DotProduct(void* result, const Vector3D* v1, const Vector3D* v2);
+void Vector3D_CrossProduct(Vector3D* result, const Vector3D* v1, const Vector3D* v2);
 
 //Utils
 void Vector3D_Print(const Vector3D* vec);
