@@ -172,16 +172,16 @@ void test_vector3d_create_null_args(void) {
 
     /* Эти вызовы должны просто вернуться без изменений */
     Vector3D_Create(vec, NULL, yb, zb, t);
-    TEST_ASSERT_NULL(vec->typeInfo);
+    TEST_ASSERT_NULL(Vector3D_GetTypeInfo(vec));
 
     Vector3D_Create(vec, xb, NULL, zb, t);
-    TEST_ASSERT_NULL(vec->typeInfo);
+    TEST_ASSERT_NULL(Vector3D_GetTypeInfo(vec));
 
     Vector3D_Create(vec, xb, yb, NULL, t);
-    TEST_ASSERT_NULL(vec->typeInfo);
+    TEST_ASSERT_NULL(Vector3D_GetTypeInfo(vec));
 
     Vector3D_Create(vec, xb, yb, zb, NULL);
-    TEST_ASSERT_NULL(vec->typeInfo);
+    TEST_ASSERT_NULL(Vector3D_GetTypeInfo(vec));
 
     free(vec); free(xb); free(yb); free(zb);
 }
