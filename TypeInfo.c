@@ -65,7 +65,6 @@ static int complex_compare(const void* arg1, const void* arg2) {
     return Complex_Equal((const Complex*)arg1, (const Complex*)arg2) ? 0 : 1;
 }
 
-
 //Functions
 TypeInfo* ofDouble() {
     if (double_type == NULL) {

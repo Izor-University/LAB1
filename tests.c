@@ -1,7 +1,9 @@
+// tests.c
 #include "unity.h"
 #include "TypeInfo.h"
 #include "Vector3D.h"
 #include "Complex.h"
+#include "Matrix3x3.h"
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -66,8 +68,6 @@ void test_ofComplex_singleton(void) {
     TEST_ASSERT_EQUAL_PTR(ofComplex(), ofComplex());
 }
 
-/* УДАЛЕНО: test_complex_create_zero - нет create_zero в TypeInfo */
-
 void test_complex_add(void) {
     TypeInfo* t = ofComplex();
     Complex* a = malloc(Complex_SizeOf());
@@ -131,7 +131,7 @@ void test_vector3d_create_double(void) {
     ASSERT_DOUBLE_EQ(3.0, *(double*)Vector3D_GetZ(vec));
     TEST_ASSERT_EQUAL_PTR(t, Vector3D_GetTypeInfo(vec));
 
-    Vector3D_Destroy(vec);  /* Освобождает xb, yb, zb и vec */
+    Vector3D_Destroy(vec);
 }
 
 void test_vector3d_create_complex(void) {
@@ -157,7 +157,7 @@ void test_vector3d_create_complex(void) {
     TEST_ASSERT_TRUE(Complex_Equal((Complex*)Vector3D_GetY(vec), yb));
     TEST_ASSERT_TRUE(Complex_Equal((Complex*)Vector3D_GetZ(vec), zb));
 
-    Vector3D_Destroy(vec);  /* Освобождает xb, yb, zb и vec */
+    Vector3D_Destroy(vec);
     free(cx); free(cy); free(cz);
 }
 
@@ -170,7 +170,6 @@ void test_vector3d_create_null_args(void) {
     Vector3D* vec = malloc(Vector3D_SizeOf());
     memset(vec, 0, Vector3D_SizeOf());
 
-    /* Эти вызовы должны просто вернуться без изменений */
     Vector3D_Create(vec, NULL, yb, zb, t);
     TEST_ASSERT_NULL(Vector3D_GetTypeInfo(vec));
 
@@ -440,6 +439,118 @@ void test_vector3d_cross_self_is_zero(void) {
     Vector3D_Destroy(cross);
 }
 
+/* ─── Matrix3x3: Rotate ─────────────────────────────────── */
+void test_matrix3x3_rotate_x(void) {
+    TypeInfo* t = ofDouble();
+
+    double* x = malloc(sizeof(double)); *x = 0.0;
+    double* y = malloc(sizeof(double)); *y = 1.0;
+    double* z = malloc(sizeof(double)); *z = 0.0;
+    Vector3D* v1 = malloc(Vector3D_SizeOf());
+    Vector3D_Create(v1, x, y, z, t);
+
+    double* rx = malloc(sizeof(double)); *rx = 0.0;
+    double* ry = malloc(sizeof(double)); *ry = 0.0;
+    double* rz = malloc(sizeof(double)); *rz = 0.0;
+    Vector3D* result = malloc(Vector3D_SizeOf());
+    Vector3D_Create(result, rx, ry, rz, t);
+
+    Matrix3x3* rot_matrix = malloc(Matrix3x3_SizeOf());
+    void* mat_data[3][3];
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            mat_data[i][j] = malloc(sizeof(double));
+            *(double*)mat_data[i][j] = 0.0;
+        }
+    }
+    Matrix3x3_Create(rot_matrix, mat_data, t);
+
+    Matrix3x3_MakeRotation(rot_matrix, 'x', M_PI / 2.0);
+    Matrix3x3_MultiplyVector(result, rot_matrix, v1);
+
+    ASSERT_DOUBLE_EQ(0.0, *(double*)Vector3D_GetX(result));
+    ASSERT_DOUBLE_EQ(0.0, *(double*)Vector3D_GetY(result));
+    ASSERT_DOUBLE_EQ(1.0, *(double*)Vector3D_GetZ(result));
+
+    Matrix3x3_Destroy(rot_matrix);
+    Vector3D_Destroy(v1);
+    Vector3D_Destroy(result);
+}
+
+void test_matrix3x3_rotate_y(void) {
+    TypeInfo* t = ofDouble();
+
+    double* x = malloc(sizeof(double)); *x = 0.0;
+    double* y = malloc(sizeof(double)); *y = 0.0;
+    double* z = malloc(sizeof(double)); *z = 1.0;
+    Vector3D* v1 = malloc(Vector3D_SizeOf());
+    Vector3D_Create(v1, x, y, z, t);
+
+    double* rx = malloc(sizeof(double)); *rx = 0.0;
+    double* ry = malloc(sizeof(double)); *ry = 0.0;
+    double* rz = malloc(sizeof(double)); *rz = 0.0;
+    Vector3D* result = malloc(Vector3D_SizeOf());
+    Vector3D_Create(result, rx, ry, rz, t);
+
+    Matrix3x3* rot_matrix = malloc(Matrix3x3_SizeOf());
+    void* mat_data[3][3];
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            mat_data[i][j] = malloc(sizeof(double));
+            *(double*)mat_data[i][j] = 0.0;
+        }
+    }
+    Matrix3x3_Create(rot_matrix, mat_data, t);
+
+    Matrix3x3_MakeRotation(rot_matrix, 'y', M_PI / 2.0);
+    Matrix3x3_MultiplyVector(result, rot_matrix, v1);
+
+    ASSERT_DOUBLE_EQ(1.0, *(double*)Vector3D_GetX(result));
+    ASSERT_DOUBLE_EQ(0.0, *(double*)Vector3D_GetY(result));
+    ASSERT_DOUBLE_EQ(0.0, *(double*)Vector3D_GetZ(result));
+
+    Matrix3x3_Destroy(rot_matrix);
+    Vector3D_Destroy(v1);
+    Vector3D_Destroy(result);
+}
+
+void test_matrix3x3_rotate_z(void) {
+    TypeInfo* t = ofDouble();
+
+    double* x = malloc(sizeof(double)); *x = 1.0;
+    double* y = malloc(sizeof(double)); *y = 0.0;
+    double* z = malloc(sizeof(double)); *z = 0.0;
+    Vector3D* v1 = malloc(Vector3D_SizeOf());
+    Vector3D_Create(v1, x, y, z, t);
+
+    double* rx = malloc(sizeof(double)); *rx = 0.0;
+    double* ry = malloc(sizeof(double)); *ry = 0.0;
+    double* rz = malloc(sizeof(double)); *rz = 0.0;
+    Vector3D* result = malloc(Vector3D_SizeOf());
+    Vector3D_Create(result, rx, ry, rz, t);
+
+    Matrix3x3* rot_matrix = malloc(Matrix3x3_SizeOf());
+    void* mat_data[3][3];
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            mat_data[i][j] = malloc(sizeof(double));
+            *(double*)mat_data[i][j] = 0.0;
+        }
+    }
+    Matrix3x3_Create(rot_matrix, mat_data, t);
+
+    Matrix3x3_MakeRotation(rot_matrix, 'z', M_PI / 2.0);
+    Matrix3x3_MultiplyVector(result, rot_matrix, v1);
+
+    ASSERT_DOUBLE_EQ(0.0, *(double*)Vector3D_GetX(result));
+    ASSERT_DOUBLE_EQ(1.0, *(double*)Vector3D_GetY(result));
+    ASSERT_DOUBLE_EQ(0.0, *(double*)Vector3D_GetZ(result));
+
+    Matrix3x3_Destroy(rot_matrix);
+    Vector3D_Destroy(v1);
+    Vector3D_Destroy(result);
+}
+
 /* ─── TypeInfo синглтон не портится после операций ──────── */
 void test_typeinfo_singleton_survives_ops(void) {
     TypeInfo* t_before = ofDouble();
@@ -513,6 +624,11 @@ int main(void) {
     RUN_TEST(test_vector3d_cross_product);
     RUN_TEST(test_vector3d_cross_anticommutativity);
     RUN_TEST(test_vector3d_cross_self_is_zero);
+
+    /* Matrix3x3: Rotate */
+    RUN_TEST(test_matrix3x3_rotate_x);
+    RUN_TEST(test_matrix3x3_rotate_y);
+    RUN_TEST(test_matrix3x3_rotate_z);
 
     /* Синглтон не разрушается */
     RUN_TEST(test_typeinfo_singleton_survives_ops);

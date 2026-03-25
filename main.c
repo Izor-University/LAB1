@@ -1,6 +1,8 @@
+// main.c
 #include "Vector3D.h"
 #include "TypeInfo.h"
 #include "Complex.h"
+#include "Matrix3x3.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,6 +15,7 @@ Vector3D* create_vector_same_type(Vector3D* v1);
 void handle_add(Vector3D* v1);
 void handle_dot(Vector3D* v1);
 void handle_cross(Vector3D* v1);
+void handle_rotate(Vector3D* v1);
 
 // ========== Main ==========
 
@@ -65,6 +68,11 @@ int main(void) {
             break;
 
         case 6:
+            if (!v1) { printf("No vector. Create one first.\n"); break; }
+            handle_rotate(v1);
+            break;
+
+        case 7:
             if (!v1) { printf("No vector.\n"); break; }
             printf("v1 =\n");
             Vector3D_Print(v1);
@@ -92,7 +100,8 @@ void print_menu(void) {
     printf("3. Add (v1 + v2)\n");
     printf("4. Dot (v1 . v2)\n");
     printf("5. Cross (v1 x v2)\n");
-    printf("6. Print v1\n");
+    printf("6. Rotate (double only)\n");
+    printf("7. Print v1\n");
     printf("0. Exit\n");
     printf("Choice: ");
 }
@@ -251,4 +260,52 @@ void handle_cross(Vector3D* v1) {
 
     Vector3D_Destroy(result);
     Vector3D_Destroy(v2);
+}
+
+void handle_rotate(Vector3D* v1) {
+    if (Vector3D_GetTypeInfo(v1) != ofDouble()) {
+        printf("Rotation is only supported for double vectors.\n");
+        return;
+    }
+
+    char axis;
+    double angle;
+    printf("Enter axis (x, y, z): ");
+    if (scanf(" %c", &axis) != 1) { while (getchar() != '\n'); return; }
+    printf("Enter angle (in radians): ");
+    if (scanf("%lf", &angle) != 1) { while (getchar() != '\n'); return; }
+
+    TypeInfo* ti = Vector3D_GetTypeInfo(v1);
+
+    Vector3D* result = malloc(Vector3D_SizeOf());
+    void* rx = malloc(ti->element_size);
+    void* ry = malloc(ti->element_size);
+    void* rz = malloc(ti->element_size);
+    if (!result || !rx || !ry || !rz) {
+        free(result); free(rx); free(ry); free(rz);
+        printf("Allocation failed.\n");
+        return;
+    }
+    Vector3D_Create(result, rx, ry, rz, ti);
+
+    Matrix3x3* rot_matrix = malloc(Matrix3x3_SizeOf());
+    void* mat_data[3][3];
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            mat_data[i][j] = malloc(ti->element_size);
+            if (ti == ofDouble()) { 
+                *(double*)mat_data[i][j] = 0.0; 
+            }
+        }
+    }
+    Matrix3x3_Create(rot_matrix, mat_data, ti);
+
+    Matrix3x3_MakeRotation(rot_matrix, axis, angle);
+    Matrix3x3_MultiplyVector(result, rot_matrix, v1);
+
+    printf("v1 rotated around '%c' by %.3f rad =\n", axis, angle);
+    Vector3D_Print(result);
+
+    Matrix3x3_Destroy(rot_matrix);
+    Vector3D_Destroy(result);
 }
