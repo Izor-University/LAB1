@@ -3,7 +3,7 @@ CFLAGS  = -std=c11 -Wall -Wextra -g
 LDFLAGS = -lm
 
 
-LIB_OBJ = Complex.o TypeInfo.o Vector3D.o
+LIB_OBJ = Complex.o TypeInfo.o Vector3D.o Matrix3x3.o
 
 .PHONY: all clean run run_tests
 
@@ -35,6 +35,9 @@ TypeInfo.o: TypeInfo.c TypeInfo.h Complex.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 Vector3D.o: Vector3D.c Vector3D.h TypeInfo.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+Matrix3x3.o: Matrix3x3.c Matrix3x3.h TypeInfo.h Vector3D.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
